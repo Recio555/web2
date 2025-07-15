@@ -29,5 +29,6 @@ jobs:
     - name: Deploy to Render
       if: success()
       run: |
-        https://api.render.com/deploy/srv-d1r97radbo4c73ebocl0?key=60Yb4bJVTu0
+        https://api.render.com/deploy/srv-d1rbpsnfte5s73cvegk0?key=ZnR98Y_jAgA
+      
   
