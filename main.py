@@ -4,4 +4,4 @@ app = FastAPI()
 
 @app.get("/")
 def read_root():
-    return {"mensaje": "Desarrollo desde App"}
+    return {"mensaje": "Probando"}
