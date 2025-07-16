@@ -7,6 +7,7 @@ from bson import ObjectId
 from pymongo.mongo_client import MongoClient
 from pymongo.server_api import ServerApi
 from contextlib import asynccontextmanager
+from bson.json_util import dumps
 
 
 # Initialize FastAPI app
@@ -34,9 +35,18 @@ async def lifespan(app: FastAPI):
 
 app = FastAPI()
 
+def serializar_documento(documento):
+    documento["_id"] = str(documento["_id"])
+    return documento
+
+
+
 @app.get("/")
-def read_root():
-    return {"mensaje": "Probando"}
+async def get_all_lists():
+    coleccion =  database["comments"]
+    documentos = coleccion.find()
+    json_string = dumps(documentos)
+    return json_string 
 
 
  
