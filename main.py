@@ -6,6 +6,7 @@ from motor.motor_asyncio import AsyncIOMotorClient
 from bson import ObjectId
 from pymongo.mongo_client import MongoClient
 from pymongo.server_api import ServerApi
+from contextlib import asynccontextmanager
 
 
 # Initialize FastAPI app
