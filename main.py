@@ -29,6 +29,7 @@ db = client["Informedb"]
 # Seleccionar la colección (se crea si no existe)
 coleccion = db["publicador"]
 
+
 nuevo_publicador = {
     "nombre": "Pedro",
     "horas": 12,
