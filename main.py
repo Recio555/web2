@@ -13,8 +13,6 @@ app = FastAPI()
 def read_root():
     return {"mensaje": "Probando"}
 
-
-
 uri = "mongodb+srv://reciosalvador:En8A21YCVUfUgUfC@cluster0.fnhcurd.mongodb.net/?retryWrites=true&w=majority&appName=Cluster0"
 # Create a new client and connect to the server
 client = MongoClient(uri, server_api=ServerApi('1'))
