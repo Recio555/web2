@@ -1,4 +1,4 @@
-from fastapi import FastAPI
+
 from fastapi import FastAPI, HTTPException
 from pydantic import BaseModel, Field
 from typing import List
@@ -8,6 +8,7 @@ from pymongo.mongo_client import MongoClient
 from pymongo.server_api import ServerApi
 from contextlib import asynccontextmanager
 from bson.json_util import dumps
+from fastapi.responses import JSONResponse
 
 
 # Initialize FastAPI app
@@ -35,18 +36,29 @@ async def lifespan(app: FastAPI):
 
 app = FastAPI()
 
+# Serializador para documentos MongoDB
 def serializar_documento(documento):
-    documento["_id"] = str(documento["_id"])
-    return documento
-
-
+    try:
+        documento["_id"] = str(documento["_id"])
+        return documento
+    except Exception as e:
+        print(f"Error al serializar el documento: {e}")
+        raise HTTPException(status_code=500, detail="Error al serializar el documento")
 
 @app.get("/")
 async def get_all_lists():
-    coleccion =  database["comments"]
-    documentos = coleccion.find()
-    json_string = dumps(documentos)
-    return json_string 
+    try:
+        coleccion = database["comments"]
+        documentos = coleccion.find()
+        
+        # Convertir cada documento usando serializar_documento
+        lista_documentos = [serializar_documento(doc) for doc in documentos]
+        
+        return JSONResponse(content=lista_documentos)
+    
+    except Exception as e:
+        print(f"Error en el endpoint /: {e}")
+        raise HTTPException(status_code=500, detail="Error interno del servidor") 
 
 
  
