@@ -4,21 +4,18 @@ from bson import ObjectId
 from pydantic import BaseModel
 from typing import Dict, List
 from bson.errors import InvalidId
+from typing import Optional
 from db import get_db
-
-
-
 
 
 app = FastAPI()
 
+class PublicadorUpdate(BaseModel):
+    nombre: Optional[str] = None
+    horas: Optional[int] = None
+    revisitas: Optional[int] = None
 
-#client = get_db()
-#db = client["Informedb"]
-
-# Seleccionar la colección (se crea si no existe)
-#coleccion = db["publicador"]
-
+    
 # Modelo Pydantic para el publicador
 class Publicador(BaseModel):
     nombre: str
@@ -31,10 +28,6 @@ def serialize_publicador(pub) -> dict:
     return pub
 
 
-
-#resultado = coleccion.insert_one(nuevo_publicador)
-#print("ID insertado:", resultado.inserted_id)
-
 # Endpoint POST para crear un nuevo publicador
 @app.post("/publicadores", response_model=Dict)
 def crear_publicador(publicador: Publicador, db=Depends(get_db)):
@@ -44,7 +37,7 @@ def crear_publicador(publicador: Publicador, db=Depends(get_db)):
     return serialize_publicador(publicador_dict)
 
 
-@app.get("/", response_model=List[dict])
+@app.get("/publicadores", response_model=List[dict])
 def get_all_publicadores(db = Depends(get_db)):
     cursor = db["publicador"].find()
     publicadores = list(cursor)
@@ -52,22 +45,42 @@ def get_all_publicadores(db = Depends(get_db)):
 
 
 # Obtener publicador por ID
-@app.get("/publicadores/{id}", response_model=Dict)
+@app.get("/publicadores/{id}")
 def obtener_publicador(id: str, db=Depends(get_db)):
     try:
-        oid = ObjectId(id)
+        id = ObjectId(id)
     except InvalidId:
         raise HTTPException(status_code=400, detail="ID inválido")
-    publicador = db["publicadores"].find_one({"_id": oid})
+    publicador = db["publicador"].find_one({"_id": id})
     if not publicador:
         raise HTTPException(status_code=404, detail="Publicador no encontrado")
     return serialize_publicador(publicador)
 
+
 # Actualizar publicador por ID
-@app.put("/publicadores/{id}", response_model=Dict)
-def actualizar_publicador(id: str, datos: Publicador, db=Depends(get_db)):
-    actualizacion = {k: v for k, v in datos.dict().items() if v is not None}
-    resultado = db["publicadores"].update_one({"_id": ObjectId(id)}, {"$set": actualizacion})
+@app.put("/publicadores/{id}")
+def actualizar_publicador(id: str, datos: PublicadorUpdate, db=Depends(get_db)):
+    try:
+        obj_id = ObjectId(id)
+    except InvalidId:
+        raise HTTPException(status_code=400, detail="ID de publicador no válido")
+    actualizacion = {"$set": datos.model_dump(exclude_unset=True)}
+    resultado = db["publicador"].update_one({"_id": obj_id}, actualizacion)
     if resultado.matched_count == 0:
         raise HTTPException(status_code=404, detail="Publicador no encontrado")
-    publicador_actualizado = db["publicadores"].find_one({"_id": ObjectId(id)})
+    publicador_actualizado = db["publicador"].find_one({"_id": obj_id})
+    # Puedes crear una función para serializar el ObjectId a string si es necesario
+    publicador_actualizado["id"] = str(publicador_actualizado.pop("_id"))
+    return publicador_actualizado
+
+@app.delete("/publicadores/{id}")
+def eliminar_publicador(id: str, db=Depends(get_db)):
+    try:
+        obj_id = ObjectId(id)
+    except InvalidId:
+        raise HTTPException(status_code=400, detail="ID inválido")
+    resultado = db["publicador"].delete_one({"_id": obj_id})
+    if resultado.deleted_count == 0:
+        raise HTTPException(status_code=404, detail="Publicador no encontrado")
+    return {"mensaje": "Publicador eliminado correctamente", "id": id}
+
