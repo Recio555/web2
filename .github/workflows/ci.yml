@@ -23,12 +23,12 @@ jobs:
         pip install -r requirements.txt
 
     - name: Run basic health check
-      run: |
-        python -c "import fastapi"
+      run: python -c "import fastapi"
 
     - name: Deploy to Render
       if: success()
       run: |
-        https://api.render.com/deploy/srv-d1rbpsnfte5s73cvegk0?key=ZnR98Y_jAgA
+        curl -X POST "https://api.render.com/deploy/srv-d1rbpsnfte5s73cvegk0?key=ZnR98Y_jAgA"
+
       
   
