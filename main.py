@@ -44,7 +44,7 @@ def crear_publicador(publicador: Publicador, db=Depends(get_db)):
     return serialize_publicador(publicador_dict)
 
 
-@app.get("/publicadores", response_model=List[dict])
+@app.get("/", response_model=List[dict])
 def get_all_publicadores(db = Depends(get_db)):
     cursor = db["publicador"].find()
     publicadores = list(cursor)
